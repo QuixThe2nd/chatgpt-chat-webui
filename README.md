@@ -2,7 +2,7 @@
 
 An **unofficial**, no-build vanilla HTML/CSS/JS web console styled as a
 replica of the ChatGPT Linux desktop app's chat shell. It **wraps** the
-[`chatgpt-chat-api`](../chatgpt-chat-api) server: the webui process imports
+[`chatgpt-chat-api`](https://github.com/QuixThe2nd/chatgpt-chat-api) server: the webui process imports
 and starts the API's FastAPI app and mounts the console at `/` with its
 assets under `/static` — **same-origin, no CDN, no external runtime calls**.
 
@@ -21,8 +21,8 @@ features (history sync, accounts, plugins, voice, attachments).
 ## Install and run
 
 ```bash
-# 1. install the sibling API package first (path or git install, not PyPI)
-pip install -e /path/to/chatgpt-chat-api      # or: -e ../chatgpt-chat-api
+# 1. install the API package first (git URL or local path; not on PyPI)
+pip install "chatgpt-chat-api @ git+https://github.com/QuixThe2nd/chatgpt-chat-api.git"
 
 # 2. install this package
 pip install -e .                               # add [test] for the test deps

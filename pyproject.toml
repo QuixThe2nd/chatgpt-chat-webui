@@ -9,9 +9,9 @@ description = "Unofficial ChatGPT-desktop-style WebUI that wraps the local chatg
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-# Sibling API package: install it editable from a local path or git URL
-# BEFORE this package (it is not on PyPI), e.g.:
-#   pip install -e /path/to/chatgpt-chat-api        # or: -e ../chatgpt-chat-api
+# Sibling API package: install it from git or a local path BEFORE this
+# package (it is not on PyPI), e.g.:
+#   pip install "chatgpt-chat-api @ git+https://github.com/QuixThe2nd/chatgpt-chat-api.git"
 #   pip install -e .
 dependencies = [
     "chatgpt-chat-api",
