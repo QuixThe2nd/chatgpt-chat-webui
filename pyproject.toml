@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "chatgpt-chat-webui"
 version = "0.1.0"
-description = "Unofficial ChatGPT-desktop-style WebUI that wraps the local chatgpt-chat-api server, same-origin"
+description = "ChatGPT web UI for chatgpt-chat-api (subscription chat quota, same-origin)"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
