@@ -1,0 +1,1208 @@
+/* ============================================================
+   ChatGPT App API — local console
+   App-style shell: 276px sidebar, flex main, centered composer
+   column. No external assets.
+   ============================================================ */
+
+/* ---------- Reset ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body.app {
+  height: 100dvh;
+  max-width: 100vw;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  line-height: 1.45;
+  color: #0d0d0d;
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+}
+
+button {
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -48px;
+  left: 10px;
+  z-index: 200;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #0d0d0d;
+  color: #fff;
+  font-size: 13px;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 10px;
+}
+
+:focus-visible {
+  outline: 2px solid #0d0d0d;
+  outline-offset: 2px;
+}
+
+/* ---------- Icon buttons ---------- */
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  color: #3c3c43;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.icon-btn:not(:disabled):hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #0d0d0d;
+}
+
+.icon-btn:disabled {
+  color: #c2c2c7;
+}
+
+/* ---------- Shell ---------- */
+
+/* Sidebar + main fill the viewport from y=0 — no native titlebar strip. */
+.shell {
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ---------- Sidebar (276px, #f7f7f8) ---------- */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 276px;
+  flex-shrink: 0;
+  min-height: 0;
+  padding: 10px 8px 8px;
+  background: #f7f7f8;
+  border-right: 1px solid #e5e5e5;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 31px;
+  padding: 0 4px 0 10px;
+  color: #0d0d0d;
+}
+
+/* The sidebar toggle lives in the brand row (it moved out of the removed
+ * titlebar): pinned to the row's right edge. */
+.sidebar-brand #sidebar-toggle {
+  margin-left: auto;
+}
+
+.brand-name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+}
+
+.nav-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 31px;
+  width: 100%;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  text-align: left;
+  color: #0d0d0d;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-row-primary {
+  font-weight: 500;
+}
+
+.nav-row-primary:not(:disabled):hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.nav-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-recents {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin-top: 16px;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.sidebar-label {
+  padding: 0 10px;
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8e8e93;
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.recent-row {
+  display: flex;
+  align-items: center;
+  height: 31px;
+  width: 100%;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  text-align: left;
+  color: #0d0d0d;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.recent-row:not(.is-current):hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.recent-row.is-current,
+.recent-row[aria-current="true"] {
+  background: #e9e9ea;
+  font-weight: 500;
+}
+
+.recent-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-account {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  row-gap: 1px;
+  align-items: center;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #e9e9ea;
+}
+
+.account-avatar {
+  grid-row: 1 / span 2;
+  color: #3c3c43;
+}
+
+.account-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0d0d0d;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-sub {
+  font-size: 11.5px;
+  color: #8e8e93;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Main column ---------- */
+
+.main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  background: #fff;
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 47px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.menu-trigger {
+  display: none;
+}
+
+.chat-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: #0d0d0d;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Empty state: header floats over the canvas; title hidden, icons kept. */
+body:not(.has-messages) .chat-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: transparent;
+  border-bottom: none;
+}
+
+body:not(.has-messages) .chat-title {
+  visibility: hidden;
+}
+
+/* ---------- Popovers ---------- */
+
+.popover {
+  position: absolute;
+  z-index: 60;
+  min-width: 224px;
+  max-width: calc(100vw - 24px);
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10), 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.settings-popover {
+  top: 52px;
+  right: 12px;
+}
+
+/*
+ * Model-menu geometry is pinned to the 1280×820 reference capture (see
+ * docs/visual-reference/implementation-contract.md). Offsets are relative
+ * to the composer's padding box, whose right edge sits at x≈1098 when the
+ * empty composer occupies x=457–1099.
+ */
+
+/* Root and Advanced cards share one anchor: flush under the composer
+ * (top y≈474), right edge at x≈1027 — 71px off the composer's padding
+ * box, aligned with the model pill above them. */
+.model-popover,
+.advanced-popover {
+  top: calc(100% - 2px);
+  right: 71px;
+  width: 226px;
+}
+
+/* Root card: 80px tall — top half is the 5-step power slider, bottom half
+ * the "Advanced ›" row. */
+.model-popover {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 80px;
+}
+
+/* ---------- Effort power slider (root card top half) ----------
+ * 200×24 track centered in the 226px card (its 6px padding + 7px slider
+ * inset lands the track at x≈814 in the 1280×820 reference). The thumb
+ * travels the inner range inset by its 14px half-width: five steps at
+ * 0/25/50/75/100%, matching the official thumb x positions 814/857/900/
+ * 943/986. The fill sits on the track itself (left 0): Instant leaves the
+ * light-gray track bare (0%); higher efforts fill it with the purple→blue
+ * gradient, covering the full capsule end-to-end at Pro. */
+.effort-slider {
+  padding: 8px 7px 0;
+  border-radius: 10px;
+  user-select: none;
+}
+
+.effort-track {
+  position: relative;
+  width: 200px;
+  height: 24px;
+  margin: 0 auto;
+  border-radius: 12px;
+  background: #e9e9ea;
+  cursor: pointer;
+}
+
+.effort-track-range {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+}
+
+/* The fill is a direct child of the 200px track (reparented by app.js):
+ * width 0% leaves Instant bare; 100% covers the whole capsule under the
+ * white thumb at Pro, reaching both rounded ends. */
+.effort-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%; /* JS keeps this at step * 25% */
+  border-radius: 12px;
+  background: linear-gradient(90deg, #a06cd5 0%, #4f7cf0 100%);
+}
+
+.effort-tick {
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.effort-tick:nth-of-type(1) { left: 0%; }
+.effort-tick:nth-of-type(2) { left: 25%; }
+.effort-tick:nth-of-type(3) { left: 50%; }
+.effort-tick:nth-of-type(4) { left: 75%; }
+.effort-tick:nth-of-type(5) { left: 100%; }
+
+.effort-thumb {
+  position: absolute;
+  top: 50%;
+  left: 100%; /* JS keeps this at step * 25% */
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Advanced card replaces the root card in place: 106px tall. */
+.advanced-popover {
+  height: 106px;
+  padding: 0 6px;
+}
+
+.advanced-popover .popover-row {
+  height: 33px;
+  padding: 0 6px;
+}
+
+/* Model listbox sits immediately LEFT of the Advanced card: right edge at
+ * x≈802 (296px off the composer's padding box), 282px wide, bottom edge
+ * aligned with the Advanced card at y≈580. Dynamically populated rows may
+ * extend the card upward; it never replaces its parent. */
+.model-list {
+  right: 296px;
+  bottom: -104px;
+  width: 282px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 0;
+  scrollbar-width: thin;
+}
+
+/* Effort list sits immediately RIGHT of the Advanced card (official
+ * 1027,544, 180×177): left edge at x≈1027 — the Advanced card's right
+ * edge, 71px off the composer's padding box — top edge y≈544. */
+.effort-list {
+  top: calc(100% + 70px);
+  left: calc(100% - 71px);
+  width: 180px;
+  min-width: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 0;
+  scrollbar-width: thin;
+}
+
+/* When the composer sits low in the viewport (populated chats, small
+ * screens) the whole hierarchy flips above the composer so every card
+ * stays visible. Toggled per open in app.js. */
+.composer.menu-up .model-popover,
+.composer.menu-up .advanced-popover {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+.composer.menu-up .model-list {
+  bottom: calc(100% + 6px);
+}
+
+/* Flipped, the effort list keeps its 72px overlap with the Advanced card:
+ * its bottom edge sits 72px above the Advanced card's bottom edge. */
+.composer.menu-up .effort-list {
+  top: auto;
+  bottom: calc(100% + 78px);
+}
+
+.popover-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  text-align: left;
+  color: #0d0d0d;
+  transition: background-color 0.15s ease;
+}
+
+.popover-row:not(:disabled):hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.popover-row:disabled {
+  color: #a6a6ab;
+}
+
+.popover-row svg {
+  color: #8e8e93;
+}
+
+.popover-row-advanced {
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 0 6px;
+  font-weight: 400;
+  color: #8e8e93;
+}
+
+/* The Advanced "Model" row stays highlighted while its submenu is open. */
+.popover-row.is-active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.row-label {
+  color: #0d0d0d;
+  white-space: nowrap;
+}
+
+.row-value {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: #8e8e93;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Header inside the Advanced card: normal case, muted 13px, not uppercase. */
+.popover-title {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  height: 39px;
+  flex-shrink: 0;
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: #8e8e93;
+  border-bottom: 1px solid #ededed;
+}
+
+.toggle-row {
+  cursor: pointer;
+}
+
+.toggle-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: #0d0d0d;
+  cursor: pointer;
+}
+
+.toggle-row input[type="checkbox"]:checked {
+  accent-color: #0d0d0d;
+}
+
+/* Model rows: 32px tall on white. Hover/focus may tint one lightly; the
+ * selected row is marked by a right checkmark only (added in app.js) —
+ * never a permanent gray fill. */
+.model-option {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: #0d0d0d;
+  background: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.model-option > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.model-option:hover,
+.model-option:focus-visible {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Inside the listbox card, rows align to its 6px inner padding. */
+.model-list .model-option {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.model-option[aria-disabled="true"] {
+  color: #a6a6ab;
+  cursor: default;
+}
+
+/* Effort list: slim muted header over five 29px rows (Instant … Pro).
+ * Selection is a right checkmark only (added in app.js) — no permanent
+ * selected fill; hover/focus may tint light gray. */
+.effort-list-title {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  margin-bottom: 2px;
+  padding: 0 6px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #8e8e93;
+  border-bottom: 1px solid #ededed;
+}
+
+.effort-option {
+  display: flex;
+  align-items: center;
+  height: 29px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: #0d0d0d;
+  background: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.effort-option > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.effort-option:hover,
+.effort-option:focus-visible {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.model-select-fallback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 4px 0;
+  font-size: 13px;
+  color: #6e6e73;
+}
+
+.model-select-fallback select {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  color: #0d0d0d;
+  cursor: pointer;
+}
+
+/* ---------- Health indicator ---------- */
+
+.health {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 2px 2px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #6e6e73;
+}
+
+.health .dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #b9b9be;
+  transition: background-color 0.2s ease;
+}
+
+.health.checking .dot {
+  background: #c99a2e;
+  animation: health-pulse 1.2s ease-in-out infinite;
+}
+
+.health.ok .dot,
+.health.online .dot {
+  background: #30d158;
+}
+
+.health.down .dot,
+.health.error .dot {
+  background: #ff453a;
+}
+
+@keyframes health-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ---------- Empty state ---------- */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+  padding-top: 8px;
+  padding-bottom: 0;
+}
+
+.empty-heading {
+  margin-top: clamp(120px, 37.4vh, 306px);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-align: center;
+  color: #0d0d0d;
+}
+
+/* ---------- Transcript ---------- */
+
+.transcript {
+  display: none;
+  margin: 0 auto;
+  padding: 24px 0 8px;
+  scrollbar-width: thin;
+}
+
+body.has-messages .empty-state {
+  display: none;
+}
+
+body.has-messages .transcript {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  width: min(736px, calc(100% - 32px));
+}
+
+/* Assistant replies: unboxed, left-aligned plain text. */
+.turn-assistant,
+.message-assistant,
+.msg-assistant,
+.message.assistant {
+  align-self: flex-start;
+  max-width: 100%;
+  margin: 0 0 22px;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: #0d0d0d;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* User turns: black bubble, white text, right-aligned. */
+.turn-user,
+.message-user,
+.msg-user,
+.message.user {
+  align-self: flex-end;
+  max-width: 75%;
+  margin: 0 0 22px;
+  padding: 10px 18px;
+  background: #0d0d0d;
+  color: #fff;
+  font-size: 15.5px;
+  line-height: 1.6;
+  border-radius: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* "You"/"Assistant" labels: visually hidden, kept for screen readers. */
+.message .who {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Message body inherits bubble/text styling from the .message element. */
+.message .body {
+  margin: 0;
+}
+
+/* Completed-assistant action row: compact, left-aligned, muted, unboxed.
+   Controls are replica-unavailable (disabled) but stay legible. */
+.message-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: #8e8e93;
+}
+
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.action-btn:disabled {
+  color: #8e8e93;
+  opacity: 0.75;
+}
+
+.transcript :where(p, div, pre) {
+  margin: 0;
+}
+
+.transcript pre {
+  padding: 10px 12px;
+  background: #f7f7f8;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.transcript code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+/* ---------- Feedback / errors ---------- */
+
+.feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 0 16px;
+}
+
+.feedback p {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: #6e6e73;
+  text-align: center;
+}
+
+.error {
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: rgba(217, 48, 37, 0.08);
+  color: #d93025;
+  font-size: 13px;
+}
+
+noscript .error {
+  margin: 12px auto;
+  max-width: 480px;
+  text-align: center;
+}
+
+/* ---------- Composer ---------- */
+
+.composer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: min(642px, calc(100% - 32px));
+  min-height: 47px;
+  flex-shrink: 0;
+  margin: 0 auto 16px;
+  /* Right padding 3px lands the pill's right edge at x≈1027, flush with
+   * the popover anchor below it (see the pinned model-menu geometry). */
+  padding: 6px 3px 6px 6px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.composer:focus-within {
+  border-color: #c9c9ce;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+}
+
+.composer .icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+.composer textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: center;
+  max-height: 200px;
+  padding: 0 2px;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: #0d0d0d;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.composer textarea::placeholder {
+  color: #8e8e93;
+}
+
+/* Composer model pill: pinned at 226×30 so it spans x≈801–1027 at the
+ * 1280×820 reference capture. Its visible label is the current effort
+ * name (default "Pro"). */
+.model-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 226px;
+  height: 30px;
+  flex-shrink: 0;
+  padding: 0 10px;
+  border-radius: 15px;
+  font-size: 13px;
+  color: #6e6e73;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* "Pro" stays centered; the chevron is pinned to the right edge. */
+.model-trigger > svg {
+  position: absolute;
+  right: 10px;
+}
+
+.model-trigger:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #0d0d0d;
+}
+
+.send-btn,
+.stop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: #0d0d0d;
+  color: #fff;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.send-btn:not(:disabled):hover,
+.stop-btn:not(:disabled):hover {
+  background: #2f2f2f;
+}
+
+.send-btn:not(:disabled):active,
+.stop-btn:not(:disabled):active {
+  transform: scale(0.94);
+}
+
+.send-btn:disabled {
+  background: #d5d5da;
+  color: #8e8e93;
+}
+
+.stop-btn:disabled {
+  display: none;
+}
+
+/* Populated state: wider 736px column, composer pinned to the bottom. */
+
+body.has-messages .composer {
+  width: min(736px, calc(100% - 32px));
+}
+
+/* Empty state: collapse unused regions; composer sits ~9px under heading. */
+
+body:not(.has-messages) .transcript,
+body:not(.has-messages) .feedback:empty {
+  display: none;
+}
+
+body:not(.has-messages) .composer {
+  margin-top: 9px;
+}
+
+/* ---------- Responsive (<= 700px) ---------- */
+
+@media (max-width: 700px) {
+  body.app {
+    overflow-x: hidden;
+  }
+
+  .shell {
+    position: relative;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(80vw, 288px);
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: none;
+  }
+
+  body.sidebar-open .sidebar {
+    transform: none;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+  }
+
+  body.sidebar-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .main {
+    width: 100%;
+  }
+
+  .menu-trigger {
+    display: inline-flex;
+  }
+
+  .chat-title {
+    text-align: left;
+  }
+
+  .empty-state {
+    padding-top: 14vh;
+  }
+
+  .empty-heading {
+    font-size: 24px;
+  }
+
+  .transcript,
+  body.has-messages .transcript,
+  .composer,
+  body.has-messages .composer {
+    width: calc(100% - 24px);
+  }
+
+  /* The pinned 226px pill would starve the textarea on a narrow viewport:
+   * shrink to content and keep every card inside the viewport width. */
+  .model-trigger {
+    width: auto;
+    min-width: 0;
+  }
+
+  .model-popover,
+  .advanced-popover {
+    right: 8px;
+  }
+
+  /* Mobile re-anchor: the desktop bottom edge (composer_bottom + 104px,
+   * aligned with the Advanced card) would overlay the parent entirely on
+   * a narrow viewport. Bottom 4px stacks the list immediately above the
+   * Advanced card (whose top sits at 100% - 2px) with a 2px gap. */
+  .model-list {
+    right: 8px;
+    bottom: 4px;
+    width: min(282px, calc(100vw - 24px));
+  }
+
+  /* Flipped upward, the 106px Advanced card occupies 100% + 6px..112px;
+   * the list must clear it (6px gap + 106px card + 2px gap = 114px).
+   * Same specificity as the desktop flip rule, later in source order. */
+  .composer.menu-up .model-list {
+    bottom: calc(100% + 114px);
+  }
+
+  /* The effort list has no room right of the Advanced card on a narrow
+   * viewport: stack it exactly like the model list (same anchors, its own
+   * 180px width), so it stays fully in viewport above composer/send. */
+  .effort-list {
+    top: auto;
+    left: auto;
+    right: 8px;
+    bottom: 4px;
+    width: min(180px, calc(100vw - 24px));
+  }
+
+  .composer.menu-up .effort-list {
+    bottom: calc(100% + 114px);
+  }
+
+  .settings-popover {
+    right: 8px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

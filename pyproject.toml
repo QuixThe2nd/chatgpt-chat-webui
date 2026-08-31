@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chatgpt-chat-webui"
+version = "0.1.0"
+description = "Unofficial ChatGPT-desktop-style WebUI that wraps the local chatgpt-chat-api server, same-origin"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+# Sibling API package: install it editable from a local path or git URL
+# BEFORE this package (it is not on PyPI), e.g.:
+#   pip install -e /path/to/chatgpt-chat-api        # or: -e ../chatgpt-chat-api
+#   pip install -e .
+dependencies = [
+    "chatgpt-chat-api",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+chatgpt-chat-webui = "chatgpt_chat_webui.app:main"
+
+[tool.setuptools]
+packages = ["chatgpt_chat_webui"]
+
+[tool.setuptools.package-data]
+chatgpt_chat_webui = ["webui/*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
