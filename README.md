@@ -3,9 +3,17 @@
 A **ChatGPT web UI** for
 [`chatgpt-chat-api`](https://github.com/QuixThe2nd/chatgpt-chat-api).
 
-That API spends your ChatGPT **subscription chat quota** (the same pool as
-the ChatGPT app, separate from Codex). This repo is the browser UI: same
-process, same origin, no CDN.
+It uses the Chat access on the account signed into the Linux ChatGPT app,
+whether the account is **free or paid**. Free and Go accounts get unlimited
+GPT‑5.6 Luna text chats subject to abuse guardrails; Plus and Pro accounts
+also get GPT‑5.6 Sol and its effort control. Chat and Codex use separate
+access pools.
+
+Source: [OpenAI — Improving GPT‑5.6 Sol in ChatGPT and expanding access to
+GPT‑5.6 Luna for free users](https://openai.com/index/improving-gpt-5-6-sol-in-chatgpt/)
+(August 6, 2026).
+
+This repo is the browser UI: same process, same origin, no CDN.
 
 Unofficial. Not affiliated with OpenAI.
 
