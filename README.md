@@ -1,23 +1,9 @@
 # chatgpt-chat-webui
 
-> **Free plan:** OpenAI says Free and Go accounts get **unlimited GPT‑5.6
-> Luna text chats**, subject to abuse guardrails. This WebUI uses that same
-> signed-in Chat access. No paid subscription is required.
-
 ![ChatGPT web UI](docs/assets/chatgpt-webui.png)
 
 A **ChatGPT web UI** for
 [`chatgpt-chat-api`](https://github.com/QuixThe2nd/chatgpt-chat-api).
-
-It uses the Chat access on the account signed into the Linux ChatGPT app,
-whether the account is **free or paid**. Free and Go accounts get unlimited
-GPT‑5.6 Luna text chats subject to abuse guardrails; Plus and Pro accounts
-also get GPT‑5.6 Sol and its effort control. Chat and Codex use separate
-access pools.
-
-Source: [OpenAI — Improving GPT‑5.6 Sol in ChatGPT and expanding access to
-GPT‑5.6 Luna for free users](https://openai.com/index/improving-gpt-5-6-sol-in-chatgpt/)
-(August 6, 2026).
 
 This repo is the browser UI: same process, same origin, no CDN.
 
