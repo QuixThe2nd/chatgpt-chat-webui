@@ -2,51 +2,23 @@
 
 ![ChatGPT web UI](docs/assets/chatgpt-webui.png)
 
-A **ChatGPT web UI** for
-[`chatgpt-chat-api`](https://github.com/QuixThe2nd/chatgpt-chat-api).
+A ChatGPT page in your browser, powered by
+[chatgpt-chat-api](https://github.com/QuixThe2nd/chatgpt-chat-api).
 
-This repo is the browser UI: same process, same origin, no CDN.
+You need the Linux ChatGPT app signed in.
 
 Unofficial. Not affiliated with OpenAI.
 
-## Requirements
-
-- Linux ChatGPT desktop app, installed and signed in
-- [`chatgpt-chat-api`](https://github.com/QuixThe2nd/chatgpt-chat-api) (not on PyPI)
-- Python 3.11+
-
-## Install and run
+## Run it
 
 ```bash
 pip install "chatgpt-chat-api @ git+https://github.com/QuixThe2nd/chatgpt-chat-api.git"
 pip install -e .
-
 chatgpt-chat-webui
 ```
 
-Open `http://127.0.0.1:8317/`. Default bind is loopback. There is **no
-login on this server** — only bind interfaces you trust
-(`CHATGPT_API_HOST` / `CHATGPT_API_PORT`).
+Open [http://127.0.0.1:8317/](http://127.0.0.1:8317/).
 
-## What you get
+Keep it on your own machine. There is no login on this server.
 
-- Chat transcript, composer, model list from `GET /v1/models`
-- Effort / power control (Instant → Pro) on the composer
-- Streaming replies with Stop, New chat, settings (health, reload models, SSE toggle)
-- Same-origin only: the page talks to the process that served it
-
-Attach, voice, and share are shown disabled. They are not implemented.
-
-Replies are plain text (`textContent`). Nothing is stored in cookies or
-browser storage; reload clears the thread.
-
-## Tests
-
-```bash
-python3 -m venv .venv
-.venv/bin/pip install "chatgpt-chat-api @ git+https://github.com/QuixThe2nd/chatgpt-chat-api.git"
-.venv/bin/pip install -e ".[test]"
-.venv/bin/pytest -q
-```
-
-No desktop app or network required at test time (in-memory fake backend).
+Reload clears the chat. Attach, voice, and share are not wired up yet.
