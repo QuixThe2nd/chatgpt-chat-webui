@@ -4,6 +4,8 @@
 > Luna text chats**, subject to abuse guardrails. This WebUI uses that same
 > signed-in Chat access. No paid subscription is required.
 
+![ChatGPT web UI](docs/assets/chatgpt-webui.png)
+
 A **ChatGPT web UI** for
 [`chatgpt-chat-api`](https://github.com/QuixThe2nd/chatgpt-chat-api).
 
